@@ -20,6 +20,9 @@ Route::middleware([SetLocale::class])->group(function () {
 
         //CRUD courses
         Route::post('/course', [CourseController::class, 'store']);
+        Route::get('/course', [CourseController::class, 'index']);
+        Route::patch('/course/{course}', [CourseController::class, 'update']);
+        Route::delete('/course/{course}', [CourseController::class, 'delete']);
     });
 
     //email verification

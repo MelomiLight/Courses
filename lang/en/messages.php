@@ -14,6 +14,17 @@ return [
         'success' => 'Successfully logged out',
         'fail' => 'Log out failed'
     ],
-    'test' => 'test',
+    'create' => [
+        'success' => 'Successfully created :attribute',
+        'fail' => ':Attribute creation failed'
+    ],
+    'update' => [
+        'success' => 'Successfully update :attribute',
+        'fail' => ':Attribute update failed'
+    ],
+    'delete' => [
+        'success' => 'Successfully deleted :attribute',
+        'fail' => ':Attribute deletion failed'
+    ],
 
 ];

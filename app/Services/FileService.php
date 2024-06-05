@@ -6,6 +6,7 @@ use App\Models\Course;
 use App\Models\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class FileService
 {
@@ -22,5 +23,14 @@ class FileService
                 'path' => $path,
             ]);
         });
+    }
+
+    public function delete($fileHash): void
+    {
+        $file = File::where('hash', trim($fileHash))->first();
+        if ($file) {
+            Storage::delete($file->path);
+            $file->delete();
+        }
     }
 }

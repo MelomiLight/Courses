@@ -4,11 +4,14 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CourseCreateRequest;
+use App\Http\Requests\CourseUpdateRequest;
 use App\Http\Resources\CourseResource;
-use App\Http\Resources\CourseStoreResource;
+use App\Http\Resources\CourseAllResource;
 use App\Models\Course;
 use App\Services\CourseService;
+use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 
 class CourseController extends Controller
@@ -20,18 +23,21 @@ class CourseController extends Controller
         $this->service = $service;
     }
 
-    public function store(CourseCreateRequest $request): JsonResponse|CourseStoreResource
+    public function store(CourseCreateRequest $request): JsonResponse
     {
         try {
             $course = $this->service->store($request);
             if ($request->hasFile('files')) {
                 $this->service->fileStore($request, $course);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
+        return response()->json([
+            'message' => __('messages.create.success', ['attribute' => 'course']),
+            'data' => new CourseAllResource($course),
+        ]);
 
-        return new CourseStoreResource($course);
     }
 
     public function show(Course $course): JsonResponse|CourseResource
@@ -43,13 +49,46 @@ class CourseController extends Controller
                 $course->author = null;
                 $course->start_date = null;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
 
         return new CourseResource($course);
     }
 
+    public function index(): AnonymousResourceCollection
+    {
+        $courses = Course::with('files')->get();
 
+        return CourseResource::collection($courses);
+    }
+
+    public function update(CourseUpdateRequest $request, Course $course): JsonResponse
+    {
+        try {
+            $this->service->update($request, $course);
+
+            if ($request->filled('delete_files')) {
+                $this->service->fileDelete($request);
+            }
+            if ($request->has('files')) {
+                $this->service->fileStore($request, $course);
+            }
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+
+        return response()->json([
+            'message' => __('messages.update.success', ['attribute' => 'course']),
+            'data' => new CourseAllResource($course),
+        ]);
+    }
+
+    public function delete(Course $course): JsonResponse
+    {
+        $this->service->delete($course);
+
+        return response()->json(['message'=>__('messages.delete.success', ['attribute' => 'course'])]);
+    }
 
 }
