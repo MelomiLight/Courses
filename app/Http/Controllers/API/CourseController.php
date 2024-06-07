@@ -5,8 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CourseCreateRequest;
 use App\Http\Requests\CourseUpdateRequest;
-use App\Http\Resources\CourseResource;
 use App\Http\Resources\CourseAllResource;
+use App\Http\Resources\CourseResource;
 use App\Models\Course;
 use App\Services\CourseService;
 use Exception;
@@ -88,7 +88,7 @@ class CourseController extends Controller
     {
         $this->service->delete($course);
 
-        return response()->json(['message'=>__('messages.delete.success', ['attribute' => 'course'])]);
+        return response()->json(['message' => __('messages.delete.success', ['attribute' => 'course'])]);
     }
 
 }

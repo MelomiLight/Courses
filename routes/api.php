@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\CommentController;
 use App\Http\Controllers\API\CourseController;
 use App\Http\Controllers\API\VerifyEmailController;
 use App\Http\Middleware\SetLocale;
@@ -23,6 +24,12 @@ Route::middleware([SetLocale::class])->group(function () {
         Route::get('/course', [CourseController::class, 'index']);
         Route::patch('/course/{course}', [CourseController::class, 'update']);
         Route::delete('/course/{course}', [CourseController::class, 'delete']);
+
+        //CRUD comments
+        Route::post('/comment', [CommentController::class, 'store']);
+        Route::get('/comment/{course}', [CommentController::class, 'index']);
+        Route::patch('/comment/{comment}', [CommentController::class, 'update']);
+        Route::delete('/comment/{comment}', [CommentController::class, 'delete']);
     });
 
     //email verification

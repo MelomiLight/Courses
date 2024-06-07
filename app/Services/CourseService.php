@@ -4,10 +4,10 @@ namespace App\Services;
 
 use App\Http\Requests\CourseCreateRequest;
 use App\Http\Requests\CourseUpdateRequest;
+use App\Jobs\DeleteCommentsJob;
+use App\Jobs\DeleteFilesJob;
 use App\Models\Course;
-use App\Models\File;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class CourseService
 {
@@ -37,7 +37,15 @@ class CourseService
 
     public function delete(Course $course): void
     {
+        $course->load('files');
         DB::transaction(function () use ($course) {
+            foreach ($course->files as $file) {
+                $fileHash = $file->hash;
+                $this->service->delete($fileHash);
+            }
+
+            DeleteCommentsJob::dispatch($course->id);
+
             $course->delete();
         });
     }
