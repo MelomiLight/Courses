@@ -29,7 +29,6 @@ class FileService
     {
         $file = File::where('hash', trim($fileHash))->first();
         if ($file) {
-            Storage::delete($file->path);
             $file->delete();
         }
     }

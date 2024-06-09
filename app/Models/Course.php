@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\DeleteCommentsJob;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,11 +25,23 @@ class Course extends Model
         'format',
         'author',
     ];
-
+    protected $casts = [
+        'start_date' => 'datetime:Y-m-d H:i:s',
+        'end_date' => 'datetime:Y-m-d H:i:s',
+    ];
     protected function serializeDate(DateTimeInterface $date): string
     {
         return $date->format('Y-m-d H:i:s');
     }
+
+    protected static function booted(): void
+    {
+        static::deleting(function ($course) {
+            $course->files->each->delete();
+            DeleteCommentsJob::dispatch($course->id);
+        });
+    }
+
 
     public function getTitleAttribute()
     {

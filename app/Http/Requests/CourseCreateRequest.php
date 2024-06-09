@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\EndDateAfterStartDate;
 
 class CourseCreateRequest extends FormRequest
 {
@@ -29,7 +30,7 @@ class CourseCreateRequest extends FormRequest
             'description_kk' => ['nullable', 'string', 'max:6000'],
             'description_ru' => ['nullable', 'string', 'max:6000'],
             'start_date' => ['required', 'date_format:Y-m-d H:i:s'],
-            'end_date' => ['required', 'date_format:Y-m-d H:i:s'],
+            'end_date' => ['required', 'date_format:Y-m-d H:i:s', new EndDateAfterStartDate($this->start_date)],
             'format' => ['required', 'string', 'in:offline,online'],
             'files.*' => ['nullable', 'file', 'mimes:pdf,jpg,png,pptx', 'max:10240'],
         ];

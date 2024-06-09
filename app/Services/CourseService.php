@@ -37,15 +37,7 @@ class CourseService
 
     public function delete(Course $course): void
     {
-        $course->load('files');
         DB::transaction(function () use ($course) {
-            foreach ($course->files as $file) {
-                $fileHash = $file->hash;
-                $this->service->delete($fileHash);
-            }
-
-            DeleteCommentsJob::dispatch($course->id);
-
             $course->delete();
         });
     }

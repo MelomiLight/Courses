@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class File extends Model
 {
@@ -17,6 +18,13 @@ class File extends Model
         'size',
         'path',
     ];
+
+    protected static function booted()
+    {
+        static::deleting(function ($file) {
+            Storage::delete($file->path);
+        });
+    }
 
     public function course(): BelongsTo
     {
