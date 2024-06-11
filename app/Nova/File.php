@@ -2,14 +2,14 @@
 
 namespace App\Nova;
 
+use App\Services\FileService;
 use Illuminate\Http\Request;
-use Laravel\Nova\Fields\ID;
-use Laravel\Nova\Fields\Text;
-use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\BelongsTo;
+use Laravel\Nova\Fields\BelongsToMany;
 use Laravel\Nova\Fields\File as NovaFile;
-use Laravel\Nova\Http\Requests\NovaRequest;
-use Illuminate\Support\Facades\Storage;
+use Laravel\Nova\Fields\ID;
+use Laravel\Nova\Fields\Number;
+use Laravel\Nova\Fields\Text;
 
 class File extends Resource
 {
@@ -25,7 +25,8 @@ class File extends Resource
     {
         return [
             ID::make()->sortable(),
-            BelongsTo::make('Course'),
+            BelongsToMany::make('Courses', 'courses', Course::class)
+                ->rules('required'), // Ensure course selection is mandatory
             Text::make('Name')->exceptOnForms(),
             Text::make('Hash')->exceptOnForms(),
             Number::make('Size')->exceptOnForms(),
@@ -33,22 +34,35 @@ class File extends Resource
             NovaFile::make('File')
                 ->disk('public')
                 ->storeAs(function (Request $request) {
-                    return $request->file->getClientOriginalName();
+                    return $request->file('file')->getClientOriginalName();
                 })
                 ->creationRules('required', 'file', 'mimes:pdf,jpg,png,pptx', 'max:20480')
                 ->store(function (Request $request, $model) {
+                    $fileService = app(FileService::class);
+
                     $file = $request->file('file');
-                    $path = $file->storeAs('files', $file->hashName(), 'public');
+
+                    // Use the FileService to store the file
+                    $storedFile = $fileService->store($file);
+
+                    // Attach the file to the selected course
+                    if ($request->course) {
+                        $course = \App\Models\Course::find($request->course);
+                        $storedFile->courses()->attach($course->id);
+                    }
 
                     return [
-                        'path' => $path,
-                        'name' => $file->getClientOriginalName(),
-                        'hash' => $file->hashName(),
-                        'size' => $file->getSize(),
+                        'path' => $storedFile->path,
+                        'name' => $storedFile->name,
+                        'hash' => $storedFile->hash,
+                        'size' => $storedFile->size,
                     ];
                 })
-                ->delete(function (Request $request, $model) {
-                    Storage::disk('public')->delete($model->path);
+                ->delete(function ($request, $model) {
+                    $fileService = app(FileService::class);
+
+                    // Use the FileService to delete the file
+                    $fileService->delete($model->id);
                     return [];
                 }),
         ];

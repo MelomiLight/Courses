@@ -13,18 +13,15 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthService
 {
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request): void
     {
         $validatedData = $request->validated();
         $validatedData['password'] = Hash::make($validatedData['password']);
 
-        $user = DB::transaction(function () use ($validatedData) {
-            return User::create($validatedData);
+        DB::transaction(function () use ($validatedData) {
+            $user = User::create($validatedData);
+            event(new Registered($user));
         });
-
-        event(new Registered($user));
-
-        return $user;
     }
 
     /**

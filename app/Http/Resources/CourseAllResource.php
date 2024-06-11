@@ -26,7 +26,7 @@ class CourseAllResource extends JsonResource
             'end_date'=> $this->end_date,
             'format'=> $this->format,
             'author'=> $this->author,
-            'files' => FileResource::collection(optional($this->files)),
+            'files' => FileResource::collection($this->files),
         ];
     }
 }

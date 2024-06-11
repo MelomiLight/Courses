@@ -32,7 +32,6 @@ class CourseUpdateRequest extends FormRequest
             'end_date' => ['nullable', 'date_format:Y-m-d H:i:s'],
             'format' => ['nullable', 'string', 'in:offline,online'],
             'files.*' => ['nullable', 'file', 'mimes:pdf,jpg,png,pptx', 'max:10240'],
-            'delete_files' => ['nullable', 'string'],
         ];
     }
 }

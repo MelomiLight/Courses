@@ -8,41 +8,21 @@ use Laravel\Nova\Fields\Textarea;
 use Laravel\Nova\Fields\DateTime;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Fields\HasMany;
+use Laravel\Nova\Fields\BelongsToMany;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use App\Http\Requests\CourseCreateRequest;
 use App\Rules\EndDateAfterStartDate;
 
 class Course extends Resource
 {
-    /**
-     * The model the resource corresponds to.
-     *
-     * @var string
-     */
     public static $model = \App\Models\Course::class;
 
-    /**
-     * The single value that should be used to represent the resource when being displayed.
-     *
-     * @var string
-     */
     public static $title = 'title_en';
 
-    /**
-     * The columns that should be searched.
-     *
-     * @var array
-     */
     public static $search = [
         'id', 'title_en', 'title_ru', 'title_kk', 'author'
     ];
 
-    /**
-     * Get the fields displayed by the resource.
-     *
-     * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
-     * @return array
-     */
     public function fields(NovaRequest $request)
     {
         return [
@@ -69,18 +49,12 @@ class Course extends Resource
 
             Text::make('Author')->rules('required', 'max:255'),
 
-            HasMany::make('Files'),
+            BelongsToMany::make('Files', 'files', File::class),
 
-            HasMany::make('Comments'),
+            HasMany::make('Comments', 'comments', Comment::class), // Assuming you have a Comment Nova resource
         ];
     }
 
-    /**
-     * Get the validation rules that apply to the resource.
-     *
-     * @param  \Laravel\Nova\Http\Requests\NovaRequest  $request
-     * @return array
-     */
     public static function rules(NovaRequest $request)
     {
         return (new CourseCreateRequest())->rules();

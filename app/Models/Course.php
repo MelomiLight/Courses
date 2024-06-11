@@ -6,6 +6,7 @@ use App\Jobs\DeleteCommentsJob;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\App;
 
@@ -37,6 +38,7 @@ class Course extends Model
     protected static function booted(): void
     {
         static::deleting(function ($course) {
+            $course->files()->detach();
             $course->files->each->delete();
             DeleteCommentsJob::dispatch($course->id);
         });
@@ -59,9 +61,9 @@ class Course extends Model
         return $this->$descriptionField;
     }
 
-    public function files(): HasMany
+    public function files(): BelongsToMany
     {
-        return $this->hasMany(File::class);
+        return $this->belongsToMany(File::class, 'course_files');
     }
 
     public function comments(): HasMany

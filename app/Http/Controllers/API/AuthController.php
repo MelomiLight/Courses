@@ -7,6 +7,8 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
+use Exception;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -22,8 +24,8 @@ class AuthController extends Controller
     public function register(RegisterRequest $request): JsonResponse
     {
         try {
-            $user = $this->service->register($request);
-        } catch (\Exception $e) {
+            $this->service->register($request);
+        } catch (Exception) {
             return response()->json(['error' => __('messages.register.fail')], 500);
         }
 
@@ -36,7 +38,7 @@ class AuthController extends Controller
     {
         try {
             $response = $this->service->login($request);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
 

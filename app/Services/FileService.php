@@ -2,32 +2,29 @@
 
 namespace App\Services;
 
-use App\Models\Course;
 use App\Models\File;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class FileService
 {
-    public function store($file, Course $course)
+    public function store($file)
     {
-        $path = $file->storeAs('files', $file->hashName(), 'public');
+        $file_hash = sha1_file($file->getPathname());
+        $path = $file->storeAs('files', $file_hash, 'public');
 
-        return DB::transaction(function () use ($file, $course, $path) {
-            File::create([
-                'course_id' => $course->id,
+        return DB::transaction(function () use ($file_hash, $file, $path) {
+            return File::create([
                 'name' => $file->getClientOriginalName(),
-                'hash' => $file->hashName(),
+                'hash' => $file_hash,
                 'size' => $file->getSize(),
                 'path' => $path,
             ]);
         });
     }
 
-    public function delete($fileHash): void
+    public function delete($file_id): void
     {
-        $file = File::where('hash', trim($fileHash))->first();
+        $file = File::where('id', $file_id)->first();
         if ($file) {
             $file->delete();
         }

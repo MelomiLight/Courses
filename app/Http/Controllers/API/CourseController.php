@@ -43,18 +43,20 @@ class CourseController extends Controller
     public function show(Course $course): JsonResponse|CourseResource
     {
         try {
-            $course->load('files');
             $user = Auth::guard('api')->user();
             if (!$user) {
                 $course->author = null;
                 $course->start_date = null;
             }
+
+            $course->load('files');
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
 
         return new CourseResource($course);
     }
+
 
     public function index(): AnonymousResourceCollection
     {
@@ -68,12 +70,10 @@ class CourseController extends Controller
         try {
             $this->service->update($request, $course);
 
-            if ($request->filled('delete_files')) {
-                $this->service->fileDelete($request);
-            }
-            if ($request->has('files')) {
-                $this->service->fileStore($request, $course);
-            }
+            $this->service->fileUpdate($request, $course);
+
+            $course->load('files');
+
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
